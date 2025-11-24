@@ -1,0 +1,7 @@
+{
+  "name": "parent-company-root",
+  "private": true,
+  "scripts": {
+    "start": "npm --prefix parent-company run start"
+  }
+}
