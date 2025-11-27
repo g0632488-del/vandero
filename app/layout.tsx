@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   title: "Parent Company Portfolio",
   description:
     "Nexus Enterprises is the parent company behind a curated portfolio of retail and professional services.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#f4ede2",
 };
 
 export default function RootLayout({

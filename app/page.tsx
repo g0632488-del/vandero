@@ -5,6 +5,7 @@ import {
   DEFAULT_BANNER_URL,
   DEFAULT_PORTFOLIO,
   PORTFOLIO_EVENT,
+  fetchServerPortfolio,
   readPortfolio,
 } from "./lib/portfolio";
 
@@ -48,7 +49,7 @@ const LivePreview = ({ url, title }: LivePreviewProps) => (
     />
     <div className="shop-live-label">
       <span>{title}</span>
-      <span className="shop-live-open">Open ↗</span>
+      <span className="shop-live-open">Open &rarr;</span>
     </div>
   </div>
 );
@@ -73,13 +74,22 @@ export default function Home() {
   }, [portfolio.shops.length, portfolio.services.length]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
+    if (typeof window === "undefined") return;
+
     const syncPortfolio = () => {
       setPortfolio(readPortfolio());
     };
-    syncPortfolio();
+
+    const prime = async () => {
+      const serverPortfolio = await fetchServerPortfolio();
+      if (serverPortfolio) {
+        setPortfolio(serverPortfolio);
+      } else {
+        syncPortfolio();
+      }
+    };
+
+    prime();
     window.addEventListener(PORTFOLIO_EVENT, syncPortfolio);
     return () => window.removeEventListener(PORTFOLIO_EVENT, syncPortfolio);
   }, []);
@@ -192,3 +202,4 @@ export default function Home() {
     </main>
   );
 }
+

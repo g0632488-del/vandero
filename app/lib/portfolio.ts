@@ -79,6 +79,29 @@ export const DEFAULT_PORTFOLIO: Portfolio = {
   services: defaultServices,
 };
 
+export const fetchServerPortfolio = async (): Promise<Portfolio | null> => {
+  try {
+    const response = await fetch("/api/portfolio", { cache: "no-store" });
+    if (!response.ok) return null;
+    const payload = (await response.json()) as Portfolio;
+    return normalizePortfolio(payload);
+  } catch {
+    return null;
+  }
+};
+
+export const persistServerPortfolio = async (portfolio: Portfolio) => {
+  try {
+    await fetch("/api/portfolio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(portfolio),
+    });
+  } catch {
+    // ignore network errors; localStorage will still have data on this device
+  }
+};
+
 const parsePortfolio = (value: string | null): Portfolio | null => {
   if (!value) return null;
   try {

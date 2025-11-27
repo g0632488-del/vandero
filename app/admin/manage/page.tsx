@@ -9,6 +9,7 @@ import {
   PortfolioItem,
   PORTFOLIO_EVENT,
   persistPortfolio,
+  persistServerPortfolio,
   readPortfolio,
 } from "../../lib/portfolio";
 
@@ -129,11 +130,12 @@ export default function AdminManagePage() {
         ...portfolio,
         shops: [...portfolio.shops, newShop],
       };
-      persistPortfolio(nextPortfolio);
-      setPortfolio(nextPortfolio);
-      setShopUrl("");
-      setMessage(`Shop "${newShop.name}" added.`);
-    } catch {
+    persistPortfolio(nextPortfolio);
+    persistServerPortfolio(nextPortfolio);
+    setPortfolio(nextPortfolio);
+    setShopUrl("");
+    setMessage(`Shop "${newShop.name}" added.`);
+  } catch {
       setMessage("Unable to fetch metadata. Please retry later.");
     } finally {
       setShopFetching(false);
@@ -172,21 +174,23 @@ export default function AdminManagePage() {
         ...portfolio,
         services: [...portfolio.services, newService],
       };
-      persistPortfolio(nextPortfolio);
-      setPortfolio(nextPortfolio);
-      setServiceUrl("");
-      setMessage(`Service "${newService.name}" added.`);
-    } catch {
+    persistPortfolio(nextPortfolio);
+    persistServerPortfolio(nextPortfolio);
+    setPortfolio(nextPortfolio);
+    setServiceUrl("");
+    setMessage(`Service "${newService.name}" added.`);
+  } catch {
       setMessage("Unable to fetch metadata. Please retry later.");
     } finally {
       setServiceFetching(false);
     }
   };
 
-  const syncPortfolioAfterChange = (nextPortfolio: Portfolio) => {
-    persistPortfolio(nextPortfolio);
-    setPortfolio(nextPortfolio);
-  };
+const syncPortfolioAfterChange = (nextPortfolio: Portfolio) => {
+  persistPortfolio(nextPortfolio);
+  persistServerPortfolio(nextPortfolio);
+  setPortfolio(nextPortfolio);
+};
 
   const deleteEntry = (type: "shop" | "service", id: number) => {
     const key = collectionKey(type);
