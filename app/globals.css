@@ -394,7 +394,6 @@ body {
 .shop-live-frame {
   position: relative;
   min-height: clamp(220px, 55vw, 360px);
-  max-height: 360px;
   aspect-ratio: 16 / 9;
   background: #0f172a;
   overflow: hidden;
@@ -404,15 +403,15 @@ body {
 .shop-live-frame iframe {
   position: absolute;
   inset: 0;
-  width: 120%;
-  height: 120%;
-  left: -10%;
-  top: -10%;
+  width: 150%;
+  height: 150%;
+  left: -25%;
+  top: -25%;
   min-height: inherit;
   border: 0;
-  background: #0f172a;
+  background: transparent;
   pointer-events: none;
-  transform: scale(1.04);
+  transform: scale(1.12);
   transform-origin: center;
   transition: transform 0.6s ease;
 }
@@ -439,7 +438,7 @@ body {
 }
 
 .shop-card:hover .shop-live-frame iframe {
-  transform: scale(1.1);
+  transform: scale(1.18);
 }
 
 .services {
@@ -740,11 +739,11 @@ body {
   }
 
   .shop-live-frame iframe {
-    width: 130%;
-    height: 130%;
-    left: -15%;
-    top: -15%;
-    transform: scale(1.08);
+    width: 160%;
+    height: 160%;
+    left: -30%;
+    top: -30%;
+    transform: scale(1.15);
   }
 
   .service-column {
