@@ -42,45 +42,57 @@ export default function AdminLoginPage() {
 
   return (
     <main className="admin-page">
-      <div className="admin-card">
-        <p className="admin-eyebrow">Secure access</p>
-        <h1>Vandero Admin Console</h1>
-        <p className="admin-subtitle">
-          Enter the access code to reach inventory and service controls.
-        </p>
+      <div className="admin-shell">
+        <header className="admin-hero">
+          <div>
+            <p className="admin-eyebrow">Secure access</p>
+            <h1>Vandero Admin Console</h1>
+            <p className="admin-subtitle">
+              Enter the one-time access code to reach inventory and service controls.
+            </p>
+            <div className="admin-chip-row">
+              <span className="admin-chip admin-chip--accent">Encrypted session</span>
+              <span className="admin-chip">Local device required</span>
+            </div>
+          </div>
+        </header>
 
-        <form className="admin-form" onSubmit={handleSubmit}>
-          <label htmlFor="admin-code" className="admin-label">
-            Access code
-          </label>
-          <input
-            id="admin-code"
-          name="admin-code"
-          type="password"
-          className="admin-input"
-          value={inputCode}
-          onChange={(event) => {
-            setInputCode(event.target.value);
-            if (message) {
-              setMessage(null);
-            }
-          }}
-          placeholder="Enter the code"
-        />
-          <button type="submit" className="admin-button">
-            Unlock console
-          </button>
-        </form>
+        <section className="admin-panel">
+          <form className="admin-form" onSubmit={handleSubmit}>
+            <label htmlFor="admin-code" className="admin-label">
+              Access code
+            </label>
+            <input
+              id="admin-code"
+              name="admin-code"
+              type="password"
+              className="admin-input"
+              value={inputCode}
+              onChange={(event) => {
+                setInputCode(event.target.value);
+                if (message) {
+                  setMessage(null);
+                }
+              }}
+              placeholder="Enter the code"
+            />
+            <div className="admin-form-toolbar">
+              <button type="submit" className="admin-button">
+                Unlock console
+              </button>
+            </div>
+          </form>
 
-        {message && (
-          <p className="admin-status admin-status--error">{message}</p>
-        )}
+          {message && (
+            <p className="admin-status admin-status--error">{message}</p>
+          )}
 
-        {displayCode && (
-          <p className="admin-hint">
-            Development code: <code>{displayCode}</code>
-          </p>
-        )}
+          {displayCode && (
+            <p className="admin-hint">
+              Development code: <code>{displayCode}</code>
+            </p>
+          )}
+        </section>
       </div>
     </main>
   );

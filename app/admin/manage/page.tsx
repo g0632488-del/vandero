@@ -42,6 +42,52 @@ const LivePreview = ({ url, title }: LivePreviewProps) => {
   );
 };
 
+type CollectionCardProps = {
+  type: "shop" | "service";
+  item: PortfolioItem;
+  onEdit: (type: "shop" | "service", item: PortfolioItem) => void;
+  onDelete: (type: "shop" | "service", id: number) => void;
+  deriveNameFromUrl: (value: string) => string;
+};
+
+const CollectionCard = ({
+  type,
+  item,
+  onEdit,
+  onDelete,
+  deriveNameFromUrl,
+}: CollectionCardProps) => (
+  <article className="admin-preview-card">
+    <div className="admin-preview-meta">
+      <span className="admin-chip">{type === "shop" ? "Shop" : "Service"}</span>
+      <h3>{item.name}</h3>
+      <p className="admin-preview-copy">
+        {item.description || "No description has been provided yet."}
+      </p>
+      <div className="admin-preview-footer">
+        <span className="admin-url">{deriveNameFromUrl(item.url)}</span>
+        <a
+          className="admin-link"
+          href={item.url}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Open live
+        </a>
+      </div>
+    </div>
+    <LivePreview url={item.url} title={item.name} />
+    <div className="admin-preview-actions">
+      <button type="button" onClick={() => onEdit(type, item)}>
+        Edit
+      </button>
+      <button type="button" onClick={() => onDelete(type, item.id)}>
+        Delete
+      </button>
+    </div>
+  </article>
+);
+
 export default function AdminManagePage() {
   const router = useRouter();
   const [portfolio, setPortfolio] = useState(DEFAULT_PORTFOLIO);
@@ -91,6 +137,15 @@ export default function AdminManagePage() {
     []
   );
 
+  const stats = useMemo(
+    () => [
+      { label: "Total entries", value: portfolio.shops.length + portfolio.services.length },
+      { label: "Shops live", value: portfolio.shops.length },
+      { label: "Services live", value: portfolio.services.length },
+    ],
+    [portfolio.services.length, portfolio.shops.length]
+  );
+
   const deriveNameFromUrl = (value: string) => {
     try {
       const parsed = new URL(value);
@@ -130,12 +185,12 @@ export default function AdminManagePage() {
         ...portfolio,
         shops: [...portfolio.shops, newShop],
       };
-    persistPortfolio(nextPortfolio);
-    persistServerPortfolio(nextPortfolio);
-    setPortfolio(nextPortfolio);
-    setShopUrl("");
-    setMessage(`Shop "${newShop.name}" added.`);
-  } catch {
+      persistPortfolio(nextPortfolio);
+      await persistServerPortfolio(nextPortfolio);
+      setPortfolio(nextPortfolio);
+      setShopUrl("");
+      setMessage(`Shop "${newShop.name}" added.`);
+    } catch {
       setMessage("Unable to fetch metadata. Please retry later.");
     } finally {
       setShopFetching(false);
@@ -174,23 +229,23 @@ export default function AdminManagePage() {
         ...portfolio,
         services: [...portfolio.services, newService],
       };
-    persistPortfolio(nextPortfolio);
-    persistServerPortfolio(nextPortfolio);
-    setPortfolio(nextPortfolio);
-    setServiceUrl("");
-    setMessage(`Service "${newService.name}" added.`);
-  } catch {
+      persistPortfolio(nextPortfolio);
+      await persistServerPortfolio(nextPortfolio);
+      setPortfolio(nextPortfolio);
+      setServiceUrl("");
+      setMessage(`Service "${newService.name}" added.`);
+    } catch {
       setMessage("Unable to fetch metadata. Please retry later.");
     } finally {
       setServiceFetching(false);
     }
   };
 
-const syncPortfolioAfterChange = (nextPortfolio: Portfolio) => {
-  persistPortfolio(nextPortfolio);
-  persistServerPortfolio(nextPortfolio);
-  setPortfolio(nextPortfolio);
-};
+  const syncPortfolioAfterChange = async (nextPortfolio: Portfolio) => {
+    persistPortfolio(nextPortfolio);
+    await persistServerPortfolio(nextPortfolio);
+    setPortfolio(nextPortfolio);
+  };
 
   const deleteEntry = (type: "shop" | "service", id: number) => {
     const key = collectionKey(type);
@@ -238,7 +293,7 @@ const syncPortfolioAfterChange = (nextPortfolio: Portfolio) => {
           entry.id === updatedItem.id ? updatedItem : entry
         ),
       } satisfies Portfolio;
-      syncPortfolioAfterChange(nextPortfolio);
+      await syncPortfolioAfterChange(nextPortfolio);
       setMessage(`${editingItem.type === "shop" ? "Shop" : "Service"} updated.`);
       setEditingItem(null);
     } catch {
@@ -264,19 +319,34 @@ const syncPortfolioAfterChange = (nextPortfolio: Portfolio) => {
   };
 
   return (
-    <main className="admin-page">
-      <div className="admin-card">
-        <div className="admin-card-heading">
+    <main className="admin-page admin-page--wide">
+      <div className="admin-shell">
+        <header className="admin-hero">
           <div>
-            <p className="admin-eyebrow">Secure access</p>
+            <p className="admin-eyebrow">Control center</p>
             <h1>Vandero Admin Console</h1>
             <p className="admin-subtitle">
-              Manage shops and services with confidence.
+              Curate shops and services, refresh live previews, and keep the catalog in sync.
             </p>
+            <div className="admin-chip-row">
+              <span className="admin-chip admin-chip--accent">Live portfolio</span>
+              <span className="admin-chip">Secure session</span>
+            </div>
           </div>
-          <button className="admin-logout" onClick={handleLogout}>
-            Log out
-          </button>
+          <div className="admin-hero-actions">
+            <button className="admin-logout" onClick={handleLogout}>
+              Log out
+            </button>
+          </div>
+        </header>
+
+        <div className="admin-stats">
+          {stats.map((stat) => (
+            <div key={stat.label} className="admin-stat">
+              <span>{stat.label}</span>
+              <strong>{stat.value}</strong>
+            </div>
+          ))}
         </div>
 
         {message && (
@@ -292,16 +362,27 @@ const syncPortfolioAfterChange = (nextPortfolio: Portfolio) => {
         )}
 
         {editingItem && (
-          <div className="admin-edit-panel">
-            <div className="admin-edit-header">
-              <h3>Edit {editingItem.type === "shop" ? "shop" : "service"}</h3>
-              <button
-                type="button"
-                className="admin-button admin-button--ghost"
-                onClick={() => setEditingItem(null)}
-              >
-                Cancel
-              </button>
+          <section className="admin-panel admin-panel--editing">
+            <div className="admin-panel-heading">
+              <div>
+                <p className="admin-chip">Editing {editingItem.type}</p>
+                <h3>{editingItem.item.name}</h3>
+                <p className="admin-preview-copy">
+                  Refresh the URL to pull a new title, description, and banner.
+                </p>
+              </div>
+              <div className="admin-form-toolbar">
+                <button
+                  type="button"
+                  className="admin-button admin-button--ghost"
+                  onClick={() => setEditingItem(null)}
+                >
+                  Cancel
+                </button>
+                <button type="button" onClick={saveEdit} className="admin-button">
+                  Save changes
+                </button>
+              </div>
             </div>
             <input
               className="admin-input"
@@ -309,114 +390,130 @@ const syncPortfolioAfterChange = (nextPortfolio: Portfolio) => {
               onChange={(event) => handleEditChange(event.target.value)}
               placeholder="Update URL"
             />
-            <div className="admin-form-toolbar">
-              <button type="button" onClick={saveEdit} className="admin-button">
-                Save changes
-              </button>
-            </div>
-          </div>
+            <p className="admin-help">The preview refreshes automatically after saving.</p>
+          </section>
         )}
 
         {isAuthorized && (
-          <div className="admin-management">
-            <section className="admin-section admin-section--shops">
-              <header className="admin-section-heading">
-                <div>
-                  <h2>Shops</h2>
+          <>
+            <div className="admin-grid">
+              <section className="admin-panel admin-panel--form">
+                <div className="admin-panel-heading">
+                  <div>
+                    <p className="admin-chip admin-chip--accent">Shops</p>
+                    <h2>Add a new shop</h2>
+                    <p className="admin-preview-copy">
+                      Drop in a product storefront URL. We will collect the title, description, and banner automatically.
+                    </p>
+                  </div>
                 </div>
-              </header>
-              <form className="admin-form" onSubmit={handleAddShop}>
-                <input
-                  value={shopUrl}
-                  onChange={(event) => setShopUrl(event.target.value)}
-                  className="admin-input"
-                  placeholder="Shop URL"
-                />
-                <div className="admin-form-toolbar">
-                  <button
-                    type="submit"
-                    className="admin-button"
-                    disabled={shopFetching}
-                  >
-                    {shopFetching ? "Adding shop..." : "Add shop"}
-                  </button>
-                </div>
-              </form>
-              <div className="admin-card-grid">
-                {portfolio.shops.map((shop) => (
-                  <article
-                    key={shop.id}
-                    className="admin-preview-card"
-                  >
-                    <LivePreview url={shop.url} title={shop.name} />
-                    <div className="admin-preview-actions">
-                      <button
-                        type="button"
-                        onClick={() => startEdit("shop", shop)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteEntry("shop", shop.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
+                <form className="admin-form" onSubmit={handleAddShop}>
+                  <label htmlFor="shop-url" className="admin-label">
+                    Shop URL
+                  </label>
+                  <input
+                    id="shop-url"
+                    value={shopUrl}
+                    onChange={(event) => setShopUrl(event.target.value)}
+                    className="admin-input"
+                    placeholder="https://example-shop.com"
+                  />
+                  <div className="admin-form-toolbar">
+                    <button
+                      type="submit"
+                      className="admin-button"
+                      disabled={shopFetching}
+                    >
+                      {shopFetching ? "Adding shop..." : "Add shop"}
+                    </button>
+                  </div>
+                </form>
+              </section>
 
-            <section className="admin-section admin-section--services">
-              <header className="admin-section-heading">
-                <div>
-                  <h2>Services</h2>
+              <section className="admin-panel admin-panel--form">
+                <div className="admin-panel-heading">
+                  <div>
+                    <p className="admin-chip">Services</p>
+                    <h2>Add a new service</h2>
+                    <p className="admin-preview-copy">
+                      Point to a live service page to mirror its metadata in the portfolio.
+                    </p>
+                  </div>
                 </div>
-              </header>
-              <form className="admin-form" onSubmit={handleAddService}>
-                <input
-                  value={serviceUrl}
-                  onChange={(event) => setServiceUrl(event.target.value)}
-                  className="admin-input"
-                  placeholder="Service URL"
-                />
-                <div className="admin-form-toolbar">
-                  <button
-                    type="submit"
-                    className="admin-button"
-                    disabled={serviceFetching}
-                  >
-                    {serviceFetching ? "Adding service..." : "Add service"}
-                  </button>
+                <form className="admin-form" onSubmit={handleAddService}>
+                  <label htmlFor="service-url" className="admin-label">
+                    Service URL
+                  </label>
+                  <input
+                    id="service-url"
+                    value={serviceUrl}
+                    onChange={(event) => setServiceUrl(event.target.value)}
+                    className="admin-input"
+                    placeholder="https://service.example.com"
+                  />
+                  <div className="admin-form-toolbar">
+                    <button
+                      type="submit"
+                      className="admin-button"
+                      disabled={serviceFetching}
+                    >
+                      {serviceFetching ? "Adding service..." : "Add service"}
+                    </button>
+                  </div>
+                </form>
+              </section>
+            </div>
+
+            <div className="admin-collections">
+              <section className="admin-section admin-section--shops">
+                <header className="admin-section-heading">
+                  <div>
+                    <h2>Shop previews</h2>
+                    <p>Validate storefront links before they go public.</p>
+                  </div>
+                </header>
+                <div className="admin-card-grid">
+                  {portfolio.shops.length === 0 && (
+                    <p className="admin-empty">No shops added yet.</p>
+                  )}
+                  {portfolio.shops.map((shop) => (
+                    <CollectionCard
+                      key={shop.id}
+                      type="shop"
+                      item={shop}
+                      deriveNameFromUrl={deriveNameFromUrl}
+                      onEdit={startEdit}
+                      onDelete={deleteEntry}
+                    />
+                  ))}
                 </div>
-              </form>
-              <div className="admin-card-grid">
-                {portfolio.services.map((service) => (
-                  <article
-                    key={service.id}
-                    className="admin-preview-card"
-                  >
-                    <LivePreview url={service.url} title={service.name} />
-                    <div className="admin-preview-actions">
-                      <button
-                        type="button"
-                        onClick={() => startEdit("service", service)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteEntry("service", service.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-          </div>
+              </section>
+
+              <section className="admin-section admin-section--services">
+                <header className="admin-section-heading">
+                  <div>
+                    <h2>Service previews</h2>
+                    <p>Spot-check service detail pages in one place.</p>
+                  </div>
+                </header>
+                <div className="admin-card-grid">
+                  {portfolio.services.length === 0 && (
+                    <p className="admin-empty">No services added yet.</p>
+                  )}
+                  {portfolio.services.map((service) => (
+                    <CollectionCard
+                      key={service.id}
+                      type="service"
+                      item={service}
+                      deriveNameFromUrl={deriveNameFromUrl}
+                      onEdit={startEdit}
+                      onDelete={deleteEntry}
+                    />
+                  ))}
+                </div>
+              </section>
+            </div>
+          </>
         )}
 
         {displayCode && (

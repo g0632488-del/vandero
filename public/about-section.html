@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About Section</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+      :root {
+        --bg: #050608;
+        --panel: #0b0f14;
+        --panel-soft: #0f141b;
+        --text: #f5f7fb;
+        --muted: #aeb7c7;
+        --accent: #6df1b6;
+        --accent-2: #24c07d;
+        --shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+        --radius: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      .about-shell {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 72px 24px;
+        background: radial-gradient(circle at 20% 20%, rgba(109, 241, 182, 0.06), transparent 35%),
+          radial-gradient(circle at 80% 30%, rgba(36, 192, 125, 0.08), transparent 38%),
+          var(--bg);
+      }
+
+      .section-wrap {
+        width: min(1200px, 100%);
+        display: grid;
+        gap: 28px;
+        text-align: center;
+        align-items: center;
+        justify-items: center;
+      }
+
+      .section-label {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.78rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--accent);
+      }
+
+      .section-label::before {
+        content: "";
+        width: 56px;
+        height: 3px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        opacity: 0.95;
+      }
+
+      .section-title {
+        font-size: clamp(2.4rem, 3vw + 1rem, 3.4rem);
+        letter-spacing: -0.02em;
+        font-weight: 700;
+      }
+
+      .section-lede {
+        max-width: 700px;
+        font-size: 1.05rem;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .card-row {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        align-items: stretch;
+        width: 100%;
+        margin-top: 8px;
+        flex-wrap: wrap;
+      }
+
+      .feature-card {
+        position: relative;
+        flex: 1;
+        min-width: 260px;
+        max-width: 360px;
+        padding: 24px 22px 26px;
+        border-radius: var(--radius);
+        background: linear-gradient(160deg, var(--panel), var(--panel-soft));
+        color: var(--text);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        isolation: isolate;
+      }
+
+      .feature-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(140deg, rgba(109, 241, 182, 0.8), rgba(36, 192, 125, 0.15), rgba(109, 241, 182, 0.6));
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0.7;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-4px);
+        transition: transform 200ms ease, box-shadow 200ms ease;
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55);
+      }
+
+      .icon-box {
+        width: 58px;
+        height: 58px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(109, 241, 182, 0.95), rgba(36, 192, 125, 0.65));
+        box-shadow: 0 8px 26px rgba(36, 192, 125, 0.35);
+        align-self: flex-start;
+      }
+
+      .feature-card h3 {
+        margin: 2px 0 2px;
+        font-size: 1.12rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .feature-card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      @media (min-width: 900px) {
+        .card-row {
+          flex-wrap: nowrap;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .about-shell {
+          padding: 56px 20px;
+        }
+
+        .card-row {
+          flex-direction: column;
+        }
+
+        .feature-card {
+          max-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="about-shell">
+      <div class="section-wrap">
+        <span class="section-label">ABOUT</span>
+        <h1 class="section-title">What we do, in one scroll.</h1>
+        <p class="section-lede">
+          We run a tight group of shops and services, focused on useful products, dependable support, and clear outcomes.
+        </p>
+
+        <div class="card-row">
+          <article class="feature-card">
+            <div class="icon-box" aria-hidden="true"></div>
+            <h3>Built to launch fast</h3>
+            <p>Each shop and service ships with what you need on day one.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon-box" aria-hidden="true"></div>
+            <h3>Simple to run</h3>
+            <p>Clear pricing, direct support, and live previews for every link.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon-box" aria-hidden="true"></div>
+            <h3>Always improving</h3>
+            <p>We keep tuning the catalog so it stays lean and useful.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
